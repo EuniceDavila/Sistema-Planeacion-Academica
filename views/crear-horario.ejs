@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programar Clase | CBTis 234</title>
+    <link rel="stylesheet" href="/css/main.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container">
+  
+        <div class="sidebar">
+            <h2>Administrador</h2>
+            <ul>
+                <li><a href="/dashboard"><i class="bi bi-house-door"></i> Inicio</a></li>
+                <li><a href="/horarios"><i class="bi bi-arrow-left-circle"></i> Volver a Horarios</a></li>
+                <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 10px 0;">
+                <li><a href="#" onclick="confirmarSalida(event)" style="color: #ff7675;"><i class="bi bi-box-arrow-left"></i> Cerrar Sesión</a></li>
+            </ul>
+        </div>
+ç
+        <div class="content-page">
+            <div class="main-container" style="max-width: 850px;">
+                
+                <h1 class="titulo">Programación Manual de Clase</h1>
+
+                <% if(error == 'choque') { %>
+                    <script>
+                        const params = new URLSearchParams(window.location.search);
+                        const mensajeError = params.get('mensaje') || 'Existe un conflicto con el docente, aula o grupo.';
+                
+                        Swal.fire({
+                            icon: 'error',
+                            title: '¡Empalme Detectado!',
+                            text: mensajeError,
+                            confirmButtonColor: '#003366',
+                            footer: '<span style="color: #d33; font-weight: bold;">Revisa la disponibilidad en la tabla de horarios</span>'
+                        });
+                    </script>
+                <% } %>
+
+                <div class="card-uniforme">
+                    <h3 style="color: var(--cbtis-azul); margin-bottom: 25px; border-bottom: 2px solid var(--gris-borde); padding-bottom: 10px; font-weight: 700;">
+                        <i class="bi bi-calendar-plus-fill me-2" style="color: var(--cbtis-celeste);"></i>Detalles de la Asignación
+                    </h3>
+                    
+                    <form action="/guardar-horario-manual" method="POST" id="formProgramar">
+                        <div class="form-grid">
+                            <div style="grid-column: span 2;">
+                                <label for="selectDocente"><i class="bi bi-person-badge"></i> 1. Selecciona al Docente:</label>
+                                <select name="id_docente" id="selectDocente" onchange="cargarDatosDocente()" required>
+                                    <option value="" disabled selected>-- Buscar docente --</option>
+                                    <% docentes.forEach(d => { %> 
+                                        <option value="<%= d.id_docente %>"><%= d.nombre %></option> 
+                                    <% }) %>
+                                </select>
+                            </div>
+
+                            <div style="grid-column: span 2;">
+                                <label for="selectMaterias"><i class="bi bi-book"></i> 2. Materia a Impartir:</label>
+                                <select name="id_materia" id="selectMaterias" required>
+                                    <option value="" disabled selected>-- Primero selecciona un docente --</option>
+                                </select>
+                            </div>
+
+                            <div style="grid-column: span 2;">
+                                <label for="selectHorarios"><i class="bi bi-clock"></i> 3. Horario Disponible:</label>
+                                <select name="disponibilidad_seleccionada" id="selectHorarios" required>
+                                    <option value="" disabled selected>-- Primero selecciona un docente --</option>
+                                </select>
+                            </div> 
+
+                            <div>
+                                <label><i class="bi bi-people"></i> 4. Grupo:</label>
+                                <select name="id_grupo" required>
+                                    <option value="" disabled selected>-- Seleccionar --</option>
+                                    <% grupos.forEach(g => { %> 
+                                        <option value="<%= g.id_grupo %>"><%= g.nombre %></option> 
+                                    <% }) %>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label><i class="bi bi-building"></i> 5. Aula Asignada:</label>
+                                <select name="id_aula" required>
+                                    <option value="" disabled selected>-- Seleccionar --</option>
+                                    <% aulas.forEach(a => { %> 
+                                        <option value="<%= a.id_aula %>"><%= a.nombre %> (Cap: <%= a.capacidad %>)</option> 
+                                    <% }) %>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primario" style="margin-top: 35px;">
+                            <i class="bi bi-check-circle-fill"></i> Fijar en Horario
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+        async function cargarDatosDocente() {
+            const id = document.getElementById('selectDocente').value;
+            const matSelect = document.getElementById('selectMaterias');
+            const horaSelect = document.getElementById('selectHorarios');
+
+            if(!id) return;
+
+            try {
+                matSelect.innerHTML = '<option>Cargando materias...</option>';
+                horaSelect.innerHTML = '<option>Cargando disponibilidad...</option>';
+                
+                const response = await fetch(`/api/docente/${id}`);
+                const data = await response.json();
+
+                if(data.materias && data.materias.length > 0) {
+                    matSelect.innerHTML = '<option value="" disabled selected>-- Seleccionar materia --</option>' + 
+                        data.materias.map(m => `<option value="${m.id_materia}">${m.nombre}</option>`).join('');
+                } else {
+                    matSelect.innerHTML = '<option value="">Sin materias asignadas</option>';
+                }
+
+                if(data.disponibilidad && data.disponibilidad.length > 0) {
+                    horaSelect.innerHTML = '<option value="" disabled selected>-- Seleccionar horario --</option>' + 
+                        data.disponibilidad.map(h => 
+                        `<option value="${h.hora_inicio}|${h.hora_fin}|${h.dia}">${h.dia}: ${h.hora_inicio} a ${h.hora_fin}</option>`
+                    ).join('');
+                } else {
+                    horaSelect.innerHTML = '<option value="">Sin disponibilidad registrada</option>';
+                }
+            } catch (error) {
+                Swal.fire('Error', 'No se pudieron cargar los datos del docente', 'error');
+            }
+        }
+
+        const form = document.getElementById('formProgramar');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: '¿Confirmar asignación?',
+                text: "Se verificará que no existan empalmes en el horario seleccionado",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#003366',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Sí, fijar clase',
+                cancelButtonText: 'Revisar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Procesando...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+                    form.submit();
+                }
+            });
+        });
+
+       function confirmarSalida(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: "Esperamos verte pronto por aquí",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#003366',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Salir',
+                cancelButtonText: 'Permanecer'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/logout";
+                }
+            });
+        }
+    </script>
+</body>
+</html>

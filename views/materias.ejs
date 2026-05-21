@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Materias | CBTis 234</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Administrador</h2>
+             <ul>
+                <li><a href="/dashboard"><i class="bi bi-house-door"></i> Inicio</a></li>
+                <li><a href="/docentes"><i class="bi bi-person-badge"></i> Docentes</a></li>
+                <li><a href="/materias"><i class="bi bi-book"></i> Materias</a></li>
+                <li><a href="/grupos"><i class="bi bi-people"></i> Grupos</a></li>
+                <li><a href="/aulas"><i class="bi bi-building"></i> Aulas</a></li>
+                <li><a href="/horarios"><i class="bi bi-calendar3"></i> Horarios</a></li>
+                <li><a href="/asignar-materias"><i class="bi bi-journal-check"></i> Asignar Materias</a></li>
+                <li><a href="/crear-horario"><i class="bi bi-clock"></i> Programar Clase</a></li>
+                <li><a href="/incidencias"><i class="bi bi-bell"></i> Incidencias Pendientes</a></li>
+                <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 10px 0;">
+                <li><a href="#" onclick="confirmarSalida(event)" style="color: #ff7675;"><i class="bi bi-box-arrow-left"></i> Cerrar Sesión</a></li>
+            </ul>
+        </div>
+
+        <div class="content-page">
+            <div class="main-container">
+                <h1 class="titulo">Gestión de Materias</h1>
+                
+                <div class="card-uniforme">
+                    <form action="/guardar-materia" method="POST" id="formMateria">
+                        <div class="form-grid" style="grid-template-columns: 2fr 1fr;"> <!-- Ajuste para solo 2 campos -->
+                            <div>
+                                <label>Nombre de la Materia</label>
+                                <input type="text" name="nombre" id="nombreMateria" placeholder="Ej. Cálculo Integral" required>
+                            </div>
+                            <div>
+                                <label>Horas Semanales</label>
+                                <input type="number" name="horas" placeholder="Ej. 4" min="1" max="20" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primario">
+                            <i class="bi bi-journal-plus"></i> Finalizar Registro de Materia
+                        </button>
+                    </form>
+                </div>
+
+                <h2 style="color: #003366; margin-bottom: 20px;"><i class="bi bi-list-check"></i> Catálogo de Materias</h2>
+                
+                <div class="tabla-container">
+                    <table class="tabla-general">
+                        <thead>
+                            <tr>
+                                <th>Nombre de la Materia</th>
+                                <th>Carga Horaria</th>
+                                <th>Configuración</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (materias && materias.length > 0) { %>
+                                <% materias.forEach(m => { %>
+                                    <tr>
+                                        <td><strong><%= m.nombre %></strong></td>
+                                        <td><%= m.horas %> Horas / Semana</td>
+                                        <td>
+                                            <div style="display: flex; gap: 10px;">
+                                                <button onclick="editarMateria('<%= m.id_materia %>', '<%= m.nombre %>', '<%= m.horas %>')"   class="btn-accion" style="background-color: #f39c12; color: white;">
+                                                     <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button onclick="confirmarEliminacion('<%= m.id_materia %>')" class="btn-accion" style="background-color: #e74c3c; color: white; border: none; padding: 5px 12px; border-radius: 5px;">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="3" style="text-align: center; color: #666; padding: 20px;">No hay materias registradas.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+const formMateria = document.getElementById('formMateria');
+if (formMateria) {
+    formMateria.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const nombre = document.getElementById('nombreMateria').value;
+        
+        Swal.fire({
+            title: '¿Registrar materia?',
+            text: `Vas a dar de alta: ${nombre}`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#003366',
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Revisar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.submit();
+            }
+        });
+    });
+}
+
+function confirmarEliminacion(id) {
+    Swal.fire({
+        title: '¿Eliminar materia?',
+        text: "Esta acción no se puede deshacer y podría afectar horarios existentes.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = `/eliminar-materia/${id}`;
+        }
+    });
+}
+
+function editarMateria(id, nombreActual, horasActual) {
+    Swal.fire({
+        title: 'Editar Materia',
+        html: `
+            <div style="text-align: left;">
+                <label style="display:block; margin-bottom:5px;">Nombre de la Materia:</label>
+                <input id="swal-nombre" class="swal2-input" value="${nombreActual}" style="margin-top:0;">
+                <label style="display:block; margin-bottom:5px; margin-top:15px;">Horas Semanales:</label>
+                <input id="swal-horas" type="number" class="swal2-input" value="${horasActual}" style="margin-top:0;">
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Guardar Cambios',
+        confirmButtonColor: '#003366',
+        cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+            const nombre = document.getElementById('swal-nombre').value;
+            const horas = document.getElementById('swal-horas').value;
+            if (!nombre || !horas) {
+                Swal.showValidationMessage('Por favor llena todos los campos');
+            }
+            return { id, nombre, horas };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/actualizar-materia';
+
+            for (const key in result.value) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = result.value[key];
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+
+function confirmarSalida(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: "Esperamos verte pronto por aquí",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#003366',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Salir',
+                cancelButtonText: 'Permanecer'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/logout";
+                }
+            });
+        }
+
+window.onload = () => {
+    const params = new URLSearchParams(window.location.search);
+    const mensaje = params.get("mensaje");
+
+    if (mensaje === "registrado") {
+        Swal.fire({ icon: 'success', title: '¡Hecho!', text: 'Materia guardada', confirmButtonColor: '#003366' });
+    } else if (mensaje === "duplicado") {
+        Swal.fire({ icon: 'warning', title: 'Materia ya existe', text: 'Ya hay una materia con ese nombre', confirmButtonColor: '#003366' });
+    } else if (mensaje === "eliminado") {
+        Swal.fire({ icon: 'success', title: 'Eliminado', text: 'La materia fue borrada', confirmButtonColor: '#003366' });
+    } else if (mensaje === "actualizado") {
+        Swal.fire({ icon: 'success', title: '¡Actualizado!', text: 'Los cambios se guardaron con éxito', confirmButtonColor: '#003366' });
+    }
+
+    if (mensaje) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    };
+
+    </script>
+</body>
+</html>

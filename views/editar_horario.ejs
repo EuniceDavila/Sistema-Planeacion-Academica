@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Incidencia | CBTis 234</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="sidebar">
+        <h2>Administrador</h2>
+        <ul>
+            <li><a href="/docentes"><i class="bi bi-people"></i> Docentes</a></li>
+            <li><a href="/horarios"><i class="bi bi-calendar3"></i> Horarios</a></li>
+            <li><a href="/incidencias"><i class="bi bi-bell-fill"></i> Incidencias</a></li>
+            <hr style="opacity: 0.2;">
+            <li><a href="/logout"><i class="bi bi-box-arrow-left"></i> Cerrar Sesión</a></li>
+        </ul>
+    </div>
+
+    <div class="content-page">
+        <div class="main-container">
+            <h1 class="titulo">
+                <% if (horario.motivo === 'Error en nombre de materia/grupo') { %>
+                    Corregir Información de Catálogo
+                <% } else if (horario.motivo === 'Empalme de materia/horario') { %>
+                    Resolver Empalme de Horario
+                <% } else { %>
+                    Corregir Disponibilidad Docente
+                <% } %>
+            </h1>
+            
+            <div class="card-uniforme">
+                <div style="margin-bottom: 25px; padding: 20px; background: #fff5f5; border-radius: 12px; border-left: 5px solid #e74c3c;">
+                    <h3 style="margin-top: 0; color: #c0392b;"><i class="bi bi-exclamation-triangle"></i> Detalles del Reporte</h3>
+                    <p style="margin: 8px 0;"><strong>Docente:</strong> <%= horario.docente %></p>
+                    <p style="margin: 8px 0;"><strong>Materia:</strong> <%= horario.materia %></p>
+                    <p style="margin: 8px 0;"><strong>Grupo:</strong> <%= horario.grupo %></p>
+                    <p style="margin: 8px 0;"><strong>Motivo reportado:</strong> <span style="color: #e74c3c; font-weight: bold;">"<%= horario.motivo %>"</span></p>
+                </div>
+
+                <% if (horario.motivo === 'Error en nombre de materia/grupo') { %>
+                    <div style="text-align: center; padding: 20px;">
+                        <p style="font-size: 1.1em; color: #2c3e50; margin-bottom: 20px;">
+                            Este reporte indica un error en los nombres. Por favor, asegúrese de corregir el nombre en la sección de <strong>Materias</strong> o <strong>Grupos</strong> primero.
+                        </p>
+                        
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <a href="/materias" class="btn-primario" style="background: #f39c12; width: auto;">
+                                <i class="bi bi-book"></i> Ir a Materias
+                            </a>
+                            <form action="/incidencias/resolver-manual" method="POST" style="display: inline;">
+                                <input type="hidden" name="id_incidencia" value="<%= id_incidencia_url %>">
+                                <button type="submit" class="btn-primario" style="background: #27ae60; width: auto;">
+                                    <i class="bi bi-check-lg"></i> Marcar como Resuelta
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                <% } else { %>
+                    <form action="/horarios/actualizar" method="POST">
+                        <input type="hidden" name="id_horario" value="<%= horario.id_horario %>">
+                        <input type="hidden" name="id_incidencia" value="<%= id_incidencia_url %>">
+
+                        <div class="form-grid" style="grid-template-columns: 1fr;">
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <p style="margin: 0; color: #666;">
+                                    <i class="bi bi-clock-history"></i> <strong>Horario actual:</strong> 
+                                    <%= horario.dia %> de <%= horario.hora_inicio.toString().substring(0,5) %> a <%= horario.hora_fin.toString().substring(0,5) %>
+                                </p>
+                            </div>
+
+                            <div>
+                                <label style="color: #2c3e50; font-weight: bold; display: block; margin-bottom: 10px;">
+                                    Asignar nuevo espacio disponible (Solo se muestran horas libres del docente):
+                                </label>
+                                
+                                <select name="nueva_disponibilidad" required class="form-control" 
+                                        style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #dcdde1; font-size: 16px;">
+                                    <option value="">-- Seleccionar nuevo horario --</option>
+                                    
+                                    <% disponibilidad.forEach(disp => { %>
+                                        <% 
+                                            const h_inicio = disp.hora_inicio.toString().substring(0,5);
+                                            const h_fin = disp.hora_fin.toString().substring(0,5);
+                                            const valorData = disp.dia + "|" + h_inicio + "|" + h_fin;
+                                        %>
+                                        <option value="<%= valorData %>">
+                                            <%= disp.dia %>: de <%= h_inicio %> a <%= h_fin %>
+                                        </option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                            <button type="submit" class="btn-primario" style="width: 100%; justify-content: center; padding: 15px;">
+                                <i class="bi bi-save"></i> Guardar Cambios y Finalizar Reporte
+                            </button>
+                        </div>
+                    </form>
+                <% } %>
+
+                <a href="/incidencias" style="display: block; text-align: center; margin-top: 20px; color: #7f8c8d; text-decoration: none; font-weight: 600;">
+                    <i class="bi bi-arrow-left"></i> Volver a la lista sin cambios
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

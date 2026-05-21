@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asignar Materias | CBTis 234</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        .lista-materias-scroll {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid var(--gris-borde);
+            border-radius: 10px;
+            padding: 15px;
+            background-color: #fcfdfe;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid var(--gris-borde);
+            transition: background 0.2s;
+        }
+
+        .checkbox-item:hover {
+            background-color: #f0f7ff;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px !important;
+            height: 18px !important;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            margin-left: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .horas-tag {
+            background: var(--cbtis-azul);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Administrador</h2>
+            <ul>
+                <li><a href="/dashboard"><i class="bi bi-house-door"></i> Inicio</a></li>
+                <li><a href="/docentes"><i class="bi bi-person-badge"></i> Docentes</a></li>
+                <li><a href="/materias"><i class="bi bi-book"></i> Materias</a></li>
+                <li><a href="/grupos"><i class="bi bi-people"></i> Grupos</a></li>
+                <li><a href="/aulas"><i class="bi bi-building"></i> Aulas</a></li>
+                <li><a href="/horarios"><i class="bi bi-calendar3"></i> Horarios</a></li>
+                <li><a href="/asignar-materias"><i class="bi bi-journal-check"></i> Asignar Materias</a></li>
+                <li><a href="/crear-horario"><i class="bi bi-clock"></i> Programar Clase</a></li>
+                <li><a href="/incidencias"><i class="bi bi-bell"></i> Incidencias Pendientes</a></li>
+                <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 10px 0;">
+                <li><a href="#" onclick="confirmarSalida(event)" style="color: #ff7675;"><i class="bi bi-box-arrow-left"></i> Cerrar Sesión</a></li>
+            </ul>
+        </div>
+
+        <div class="content-page">
+            <div class="main-container" style="max-width: 800px;">
+                <h1 class="titulo">Asignación de Carga Académica</h1>
+                
+                <div class="card-uniforme">
+                    <form action="/guardar-asignacion" method="POST" id="formAsignar">
+                        <div class="form-grid" style="grid-template-columns: 1fr;">
+                            <div>
+                                <label for="id_docente"><i class="bi bi-person-check-fill"></i> 1. Selecciona al Docente</label>
+                                <select name="id_docente" id="id_docente" required>
+                                    <option value="" disabled selected>-- Elige un docente de la lista --</option>
+                                    <% docentes.forEach(docente => { %>
+                                        <option value="<%= docente.id_docente %>"><%= docente.nombre %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                        </div>
+
+                        <label style="display: block; margin-top: 25px; color: var(--cbtis-azul); font-weight: 700;">
+                            <i class="bi bi-journal-check"></i> 2. Selecciona las Materias para este ciclo
+                        </label>
+                        
+                        <div class="lista-materias-scroll">
+                           <% materias.forEach(materia => { %>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" name="materias" value="<%= materia.id_materia %>" id="mat<%= materia.id_materia %>">
+                                    <label for="mat<%= materia.id_materia %>">
+                                        <span><%= materia.nombre %></span>
+                                        <span class="horas-tag"><%= materia.horas_semana %> hrs</span>
+                                    </label>
+                                </div>
+                            <% }) %>
+                        </div>
+
+                        <button type="submit" class="btn-primario" style="margin-top: 30px;">
+                            <i class="bi bi-save-fill"></i> Guardar Carga Académica
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('mensaje') === 'guardado') {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Carga Actualizada!',
+                text: 'Se han registrado las materias correctamente.',
+                confirmButtonColor: '#003366'
+            });
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+    });
+
+    const form = document.getElementById('formAsignar');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const selectDocente = document.getElementById('id_docente');
+        const nombreDocente = selectDocente.options[selectDocente.selectedIndex].text;
+        const materiasChecked = document.querySelectorAll('input[name="materias"]:checked');
+
+        if (!selectDocente.value) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Debes elegir a un docente.', confirmButtonColor: '#003366' });
+            return;
+        }
+
+        let htmlContent = materiasChecked.length > 0 
+            ? `<p>Se asignarán <b>${materiasChecked.length}</b> materias a:</p><h4 style="color: #003366;">${nombreDocente}</h4>`
+            : `<p style="color: #e74c3c;">Se <b>limpiará</b> toda la carga académica de:</p><h4>${nombreDocente}</h4>`;
+
+        Swal.fire({
+            title: '¿Confirmar cambios?',
+            html: htmlContent,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#003366',
+            cancelButtonColor: '#95a5a6',
+            confirmButtonText: 'Sí, aplicar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Guardando...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                form.submit();
+            }
+        });
+    });
+
+    function confirmarSalida(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: "Esperamos verte pronto por aquí",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#003366',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Salir',
+                cancelButtonText: 'Permanecer'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/logout";
+                }
+            });
+        }
+    </script>
+</body>
+</html>

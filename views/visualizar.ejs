@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Horario | CBTis 234</title>
+    <link rel="stylesheet" href="/css/main.css">+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Docente</h2>
+            <ul>
+                <li><a href="/visualizar"><i class="bi bi-calendar3"></i> Mi Horario</a></li>
+                <hr style="opacity: 0.2;">
+                <li><a href="/logout" onclick="confirmarSalida(event)"><i class="bi bi-box-arrow-left"></i> Cerrar Sesión</a></li>
+            </ul>
+        </div>
+
+        <div class="content-page">
+            <div class="main-container">
+                <h1 class="titulo">Mi Horario Académico</h1>
+                
+                <div class="card-uniforme">
+                    <div style="margin-bottom: 20px;">
+                        <a href="/imprimir-horario" target="_blank" class="btn-primario" style="width: auto; display: inline-flex; text-decoration: none;">
+                            <i class="bi bi-file-earpdf"></i> Descargar PDF
+                        </a>
+                    </div>
+
+                    <table class="tabla-general">
+                        <thead>
+                            <tr>
+                                <th>Día</th>
+                                <th>Hora</th>
+                                <th>Materia</th>
+                                <th>Grupo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (horario && horario.length > 0) { %>
+                                <% horario.forEach(h => { %>
+                                    <tr>
+                                        <td><strong><%= h.dia %></strong></td>
+                                        <td><%= h.hora_inicio.substring(0, 5) %> - <%= h.hora_fin.substring(0, 5) %></td>
+                                        <td><%= h.materia %></td>
+                                        <td><%= h.grupo %></td>
+                                        <td>
+                                            <button class="btn-accion" onclick="abrirModalReporte('<%= h.id_horario %>')">
+                                                <i class="bi bi-exclamation-triangle"></i> Reportar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr><td colspan="5">No tienes clases asignadas.</td></tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2 class="titulo" style="font-size: 1.8rem; margin-top: 40px;">Mis Reportes de Incidencias</h2>
+                <div class="card-uniforme">
+                    <table class="tabla-general">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Motivo</th>
+                                <th>Estatus</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (typeof misIncidencias !== 'undefined' && misIncidencias.length > 0) { %>
+                                <% misIncidencias.forEach(i => { %>
+                                    <tr>
+                                        <td><%= i.fecha_reporte.toLocaleDateString() %></td>
+                                        <td><%= i.descripcion %></td>
+                                        <td>
+                                            <% 
+                                                let bgColor = (i.estado === 'pendiente') ? '#fff3cd' : '#d4edda';
+                                                let textColor = (i.estado === 'pendiente') ? '#856404' : '#155724';
+                                            %>
+                                            <span class="<%= i.estado === 'pendiente' ? 'badge-pendiente' : 'badge-resuelto' %>">
+    <%= i.estado.toUpperCase() %>
+</span>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr><td colspan="3">No hay reportes enviados.</td></tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalIncidencia" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form action="/incidencias/reportar" method="POST" class="modal-content card-uniforme" style="border-top: 6px solid #dc3545 !important; padding: 0 !important;">
+                <div class="modal-header" style="border: none; padding: 20px;">
+                    <h5 class="modal-title" style="color: var(--cbtis-azul); font-weight: bold;">Reportar Error</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="padding: 20px;">
+                    <input type="hidden" name="id_horario" id="id_horario_modal">
+                    <div class="form-grid" style="display: block !important; margin-bottom: 0 !important;">
+                        <label style="display: block; margin-bottom: 10px; color: var(--cbtis-azul); font-weight: bold;">Motivo del reporte:</label>
+                        <select name="descripcion" required style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid var(--gris-borde);">
+                            <option value="Empalme de materia/horario">Empalme de materia/horario</option>
+                            <option value="Disponibilidad incorrecta">Disponibilidad incorrecta</option>
+                            <option value="Error en nombre de materia/grupo">Error en nombre de materia/grupo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border: none; padding: 20px;">
+                    <button type="submit" class="btn-primario" style="background: #dc3545 !important; width: 100%;">Enviar Reporte</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function abrirModalReporte(id) {
+            document.getElementById('id_horario_modal').value = id;
+            var myModal = new bootstrap.Modal(document.getElementById('modalIncidencia'));
+            myModal.show();
+        }
+
+        function confirmarSalida(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: "Esperamos verte pronto por aquí",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#003366',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Salir',
+                cancelButtonText: 'Permanecer'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/logout";
+                }
+            });
+        }
+    </script>
+</body>
+</html>

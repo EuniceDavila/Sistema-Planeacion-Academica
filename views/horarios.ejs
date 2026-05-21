@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Horarios | CBTis 234</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .content-page {
+            margin-left: 260px;
+            padding: 40px;
+        }
+        .input-tabla {
+            width: 100% !important;
+            padding: 8px !important;
+            border: 1px solid var(--gris-borde) !important;
+            border-radius: 6px !important;
+            font-size: 0.9rem !important;
+        }
+        .badge-dia {
+            background: var(--cbtis-azul);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Administrador</h2>
+         <ul>
+                <li><a href="/dashboard"><i class="bi bi-house-door"></i> Inicio</a></li>
+                <li><a href="/docentes"><i class="bi bi-person-badge"></i> Docentes</a></li>
+                <li><a href="/materias"><i class="bi bi-book"></i> Materias</a></li>
+                <li><a href="/grupos"><i class="bi bi-people"></i> Grupos</a></li>
+                <li><a href="/aulas"><i class="bi bi-building"></i> Aulas</a></li>
+                <li><a href="/horarios"><i class="bi bi-calendar3"></i> Horarios</a></li>
+                <li><a href="/asignar-materias"><i class="bi bi-journal-check"></i> Asignar Materias</a></li>
+                <li><a href="/crear-horario"><i class="bi bi-clock"></i> Programar Clase</a></li>
+                <li><a href="/incidencias"><i class="bi bi-bell"></i> Incidencias Pendientes</a></li>
+                <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 10px 0;">
+                <li><a href="#" onclick="confirmarSalida(event)" style="color: #ff7675;"><i class="bi bi-box-arrow-left"></i> Cerrar Sesión</a></li>
+            </ul>
+    </div>
+
+    <div class="content-page">
+        <div class="main-container">
+            <h1 class="titulo">Control General de Horarios</h1>
+
+            <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+    <i class="bi bi-funnel"></i>
+    <input type="text" id="filtroPropuesta" onkeyup="filtrarPropuesta()" placeholder="Filtrar propuesta por docente o grupo..." class="input-tabla" style="max-width: 400px;">
+</div>
+
+<table class="tabla-general">
+    </table>
+
+            <div class="card-uniforme">
+                <div style="display: flex; gap: 15px;">
+                    <button onclick="obtenerPropuesta()" class="btn-primario" style="background: #27ae60 !important;">
+                        <i class="bi bi-lightning-charge"></i> Generar Propuesta Automática
+                    </button>
+                    <button onclick="location.href='/crear-horario'" class="btn-primario">
+                        <i class="bi bi-plus-lg"></i> Asignación Manual
+                    </button>
+                </div>
+            </div>
+
+            <div id="previewSection" class="card-uniforme" style="display:none; border-top: 6px solid #27ae60 !important; overflow-x: auto; margin-bottom: 30px;">
+                <h3 style="color: #27ae60; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <i class=""></i> Propuesta Automática Generada
+                </h3>
+                <table class="tabla-general">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-check2-all"></i></th>
+                            <th>Docente / Materia</th>
+                            <th>Día</th>
+                            <th>Horario</th>
+                            <th>Aula</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCuerpoPreview"></tbody>
+                </table>
+                <div style="display: flex; gap: 15px; margin-top: 25px; justify-content: flex-end;">
+                    <button class="btn-primario" onclick="cancelarPropuesta()" style="background: #95a5a6 !important; width: auto; padding: 10px 25px;">Descartar</button>
+                    <button class="btn-primario" onclick="confirmarGuardadoSeleccionado()" style="background: #27ae60 !important; width: auto; padding: 10px 25px;">Guardar Horarios Seleccionados</button>
+                </div>
+            </div>
+
+            <div class="card-uniforme" style="padding: 15px !important; margin-bottom: 20px !important;">
+                <div class="input-group" style="margin-bottom: 0;">
+                    <i class="bi bi-search" style="margin-right: 10px; color: #666;"></i>
+                    <input type="text" id="searchInput" onkeyup="filtrarTabla()" placeholder="Buscar por docente, materia, grupo o aula..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                </div>
+            </div>
+
+            <div class="card-uniforme" style="overflow-x: auto;">
+                <table class="tabla-general" id="tablaPrincipal">
+                    <thead>
+                        <tr>
+                            <th>Docente</th>
+                            <th>Materia / Grupo</th>
+                            <th>Día y Hora</th>
+                            <th>Aula</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if(horario && horario.length > 0) { %>
+                            <% horario.forEach(h => { %>
+                                <tr>
+                                    <td><strong><%= h.docente %></strong></td>
+                                    <td><%= h.materia %> <br> <small style="background:#eee; padding:2px 5px; border-radius:3px;"><%= h.grupo %></small></td>
+                                    <td><span class="badge-dia"><%= h.dia %></span><br><%= h.hora_inicio.substring(0,5) %> - <%= h.hora_fin.substring(0,5) %></td>
+                                    <td><i class="bi bi-geo-alt"></i> <%= h.aula %></td>
+                                    <td>
+                                        <button onclick="confirmarBorrado('<%= h.id_horario %>')" class="btn-accion" style="background: #e74c3c; color: white; border:none; padding:8px; border-radius:4px; cursor:pointer;">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr><td colspan="5" style="text-align:center; padding: 20px;">No hay horarios registrados en la base de datos.</td></tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pendientesGlobal = [];
+        let aulasGlobal = [];
+
+        async function obtenerPropuesta() {
+            Swal.fire({ title: 'Generando propuesta...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+            try {
+                const res = await fetch('/propuesta-automatica');
+                const data = await res.json();
+                Swal.close();
+
+                if (!data.pendientes || data.pendientes.length === 0) {
+                    return Swal.fire('Sin pendientes', 'No hay materias por asignar.', 'info');
+                }
+
+                pendientesGlobal = data.pendientes;
+                aulasGlobal = data.aulas;
+                
+                const cuerpo = document.getElementById('tablaCuerpoPreview');
+                cuerpo.innerHTML = "";
+
+                pendientesGlobal.forEach((p, i) => {
+                    let aulaOptions = aulasGlobal.map(a => 
+                        `<option value="${a.id_aula}" ${a.id_aula == p.id_aula ? 'selected' : ''}>${a.nombre}</option>`
+                    ).join('');
+
+                    const diasSemana = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes"];
+                    let diasOptions = diasSemana.map(d => 
+                        `<option value="${d}" ${d === p.dia ? 'selected' : ''}>${d}</option>`
+                    ).join('');
+
+                    cuerpo.innerHTML += `
+                    <tr>
+                        <td><input type="checkbox" class="check-propuesta" value="${i}" checked></td>
+                        <td><strong>${p.docente}</strong><br><small>${p.materia} (${p.grupo})</small></td>
+                        <td><select id="dia-${i}" class="input-tabla">${diasOptions}</select></td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                <input type="time" id="ini-${i}" value="${p.hora_inicio}" class="input-tabla">
+                                <input type="time" id="fin-${i}" value="${p.hora_fin}" class="input-tabla">
+                            </div>
+                        </td>
+                        <td><select id="aula-${i}" class="input-tabla">${aulaOptions}</select></td>
+                    </tr>`;
+                });
+
+                document.getElementById('previewSection').style.display = 'block';
+                document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+            } catch (e) { Swal.fire('Error', 'No se pudo generar', 'error'); }
+        }
+
+       async function confirmarGuardadoSeleccionado() {
+    const seleccionados = document.querySelectorAll('.check-propuesta:checked');
+    if (seleccionados.length === 0) return Swal.fire('Aviso', 'Selecciona al menos una clase para guardar.', 'warning');
+
+    const datos = Array.from(seleccionados).map(check => {
+        const i = check.value;
+        return {
+            id_docente: pendientesGlobal[i].id_docente,
+            id_materia: pendientesGlobal[i].id_materia,
+            id_grupo: pendientesGlobal[i].id_grupo,
+            id_aula: document.getElementById(`aula-${i}`).value,
+            dia: document.getElementById(`dia-${i}`).value,
+            hora_inicio: document.getElementById(`ini-${i}`).value,
+            hora_fin: document.getElementById(`fin-${i}`).value
+        };
+    });
+
+    const confirmacion = await Swal.fire({
+        title: '¿Confirmar asignación?',
+        text: `Se guardarán ${datos.length} registros en la base de datos`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, guardar todo',
+        cancelButtonText: 'Revisar'
+    });
+
+    if (confirmacion.isConfirmed) {
+        Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading() });
+
+        try {
+            const res = await fetch('/confirmar-horarios', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ horarios: datos })
+            });
+
+            if (res.ok) {
+                await Swal.fire('¡Éxito!', 'Los horarios se han guardado correctamente', 'success');
+                location.reload();
+            } else {
+                const errorData = await res.json();
+                Swal.fire('Conflicto', errorData.error || 'No se pudo guardar', 'error');
+            }
+        } catch (e) {
+            Swal.fire('Error', 'Hubo un problema de conexión con el servidor', 'error');
+        }
+    }
+}
+        function filtrarTabla() {
+            const busqueda = document.getElementById("searchInput").value.toLowerCase();
+            const filas = document.querySelectorAll("#tablaPrincipal tbody tr");
+            filas.forEach(fila => {
+                fila.style.display = fila.textContent.toLowerCase().includes(busqueda) ? "" : "none";
+            });
+        }
+
+        function confirmarBorrado(id) {
+            Swal.fire({
+                title: '¿Eliminar?',
+                icon: 'warning',
+                showCancelButton: true
+            }).then(r => { if(r.isConfirmed) window.location.href = `/eliminar-horario/${id}`; });
+        }
+
+        function cancelarPropuesta() { document.getElementById('previewSection').style.display = 'none'; }
+
+        function confirmarSalida(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: "Esperamos verte pronto por aquí",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#003366',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Salir',
+                cancelButtonText: 'Permanecer'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/logout";
+                }
+            });
+        }
+
+        function filtrarPropuesta() {
+    const busqueda = document.getElementById("filtroPropuesta").value.toLowerCase();
+    const filas = document.querySelectorAll("#tablaCuerpoPreview tr");
+    
+    filas.forEach(fila => {
+        const contenido = fila.cells[1].textContent.toLowerCase();
+        fila.style.display = contenido.includes(busqueda) ? "" : "none";
+    });
+}
+    </script>
+</body>
+</html>

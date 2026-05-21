@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Grupos | CBTis 234</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Administrador</h2>
+            <ul>
+                <li><a href="/dashboard"><i class="bi bi-house-door"></i> Inicio</a></li>
+                <li><a href="/docentes"><i class="bi bi-person-badge"></i> Docentes</a></li>
+                <li><a href="/materias"><i class="bi bi-book"></i> Materias</a></li>
+                <li><a href="/grupos"><i class="bi bi-people"></i> Grupos</a></li>
+                <li><a href="/aulas"><i class="bi bi-building"></i> Aulas</a></li>
+                <li><a href="/horarios"><i class="bi bi-calendar3"></i> Horarios</a></li>
+                <li><a href="/asignar-materias"><i class="bi bi-journal-check"></i> Asignar Materias</a></li>
+                <li><a href="/crear-horario"><i class="bi bi-clock"></i> Programar Clase</a></li>
+                <li><a href="/incidencias"><i class="bi bi-bell"></i> Incidencias Pendientes</a></li>
+                <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 10px 0;">
+                <li><a href="#" onclick="confirmarSalida(event)" style="color: #ff7675;"><i class="bi bi-box-arrow-left"></i> Cerrar Sesión</a></li>
+            </ul>
+        </div>
+
+        <div class="content-page">
+            <div class="main-container">
+                <h1 class="titulo">Gestión de Grupos</h1>
+                
+                <div class="card-uniforme">
+                    <form action="/guardar-grupo" method="POST" id="formGrupo">
+                        <div class="form-grid">
+                            <div>
+                                <label>Nombre del Grupo</label>
+                                <input type="text" name="nombre" id="nombreGrupo" placeholder="Ej. 6to A" required>
+                            </div>
+                            <div>
+                                <label>Semestre</label>
+                                <select name="semestre" required>
+                                    <option value="" disabled selected>Selecciona semestre</option>
+                                    <% [1,2,3,4,5,6].forEach(s => { %>
+                                        <option value="<%= s %>"><%= s %>° Semestre</option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primario"><i class="bi bi-plus-circle"></i> Registrar Grupo</button>
+                    </form>
+                </div>
+
+                <h2 style="color: #003366; margin-bottom: 20px;"><i class="bi bi-list-ul"></i> Catálogo de Grupos</h2>
+                
+                <div class="tabla-container">
+                    <table class="tabla-general">
+                        <thead>
+                            <tr>
+                                <th>Grupo</th>
+                                <th>Semestre</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (grupos && grupos.length > 0) { %>
+                                <% grupos.forEach(g => { %>
+                                    <tr>
+                                        <td><strong><%= g.nombre %></strong></td>
+                                        <td><%= g.semestre %>° Semestre</td>
+                                        <td>
+                                            <div style="display: flex; gap: 10px;">
+                                                <button onclick="editarGrupo('<%= g.id_grupo %>', '<%= g.nombre %>', '<%= g.semestre %>')" class="btn-accion" style="background-color: #f39c12; color: white;">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button onclick="confirmarEliminacion('<%= g.id_grupo %>')" class="btn-accion" style="background-color: #e74c3c; color: white;">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr><td colspan="3" style="text-align:center;">No hay grupos registrados.</td></tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const formGrupo = document.getElementById('formGrupo');
+        if (formGrupo) {
+            formGrupo.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: '¿Registrar grupo?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#003366',
+                    confirmButtonText: 'Sí, guardar'
+                }).then((result) => { if (result.isConfirmed) this.submit(); });
+            });
+        }
+
+        function editarGrupo(id, nombre, semestre) {
+            Swal.fire({
+                title: 'Editar Grupo',
+                html: `
+                    <div style="text-align: left;">
+                        <label>Nombre del Grupo:</label>
+                        <input id="swal-nombre" class="swal2-input" value="${nombre}">
+                        <label>Semestre (1-6):</label>
+                        <input id="swal-semestre" type="number" min="1" max="6" class="swal2-input" value="${semestre}">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Guardar',
+                confirmButtonColor: '#003366',
+                preConfirm: () => {
+                    const n = document.getElementById('swal-nombre').value;
+                    const s = document.getElementById('swal-semestre').value;
+                    if (!n || !s) Swal.showValidationMessage('Campos obligatorios');
+                    return { id, nombre: n, semestre: s };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST'; form.action = '/actualizar-grupo';
+                    Object.keys(result.value).forEach(key => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden'; input.name = key; input.value = result.value[key];
+                        form.appendChild(input);
+                    });
+                    document.body.appendChild(form); form.submit();
+                }
+            });
+        }
+
+        function confirmarEliminacion(id) {
+            Swal.fire({
+                title: '¿Eliminar grupo?',
+                text: "Esto podría afectar los horarios asignados",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar'
+            }).then((result) => { if (result.isConfirmed) window.location.href = `/eliminar-grupo/${id}`; });
+        }
+
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            const m = params.get("mensaje");
+            if (m === "registrado") Swal.fire('¡Éxito!', 'Grupo guardado', 'success');
+            if (m === "duplicado") Swal.fire('Error', 'Este grupo ya existe', 'warning');
+            if (m === "eliminado") Swal.fire('Eliminado', 'Grupo borrado', 'success');
+            if (m === "actualizado") Swal.fire('¡Actualizado!', 'Cambios guardados', 'success');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        };
+
+        function confirmarSalida(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: "Esperamos verte pronto por aquí",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#003366',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Salir',
+                cancelButtonText: 'Permanecer'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/logout";
+                }
+            });
+        }
+    </script>
+</body>
+</html>

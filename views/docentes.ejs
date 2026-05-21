@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Docentes | CBTis 234</title>
+    <link rel="stylesheet" href="/css/main.css">
+    
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Administrador</h2>
+            <ul>
+                <li><a href="/dashboard"><i class="bi bi-house-door"></i> Inicio</a></li>
+                <li><a href="/docentes"><i class="bi bi-person-badge"></i> Docentes</a></li>
+                <li><a href="/materias"><i class="bi bi-book"></i> Materias</a></li>
+                <li><a href="/grupos"><i class="bi bi-people"></i> Grupos</a></li>
+                <li><a href="/aulas"><i class="bi bi-building"></i> Aulas</a></li>
+                <li><a href="/horarios"><i class="bi bi-calendar3"></i> Horarios</a></li>
+                <li><a href="/asignar-materias"><i class="bi bi-journal-check"></i> Asignar Materias</a></li>
+                <li><a href="/crear-horario"><i class="bi bi-clock"></i> Programar Clase</a></li>
+                <li><a href="/incidencias"><i class="bi bi-bell"></i> Incidencias Pendientes</a></li>
+                <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 10px 0;">
+                <li><a href="#" onclick="confirmarSalida(event)" style="color: #ff7675;"><i class="bi bi-box-arrow-left"></i> Cerrar Sesión</a></li>
+            </ul>
+        </div>
+
+        <div class="content-page">
+            <div class="main-container">
+                <h1 class="titulo">Gestión de Personal Docente</h1>
+                
+                <div class="card-uniforme">
+                    <form action="/guardar-docente" method="POST" id="formDocente">
+                        <div class="form-grid">
+                            <div>
+                                <label>Nombre Completo</label>
+                                <input type="text" name="nombre" id="nombreDocente" placeholder="Ej. Juan Pérez" required>
+                            </div>
+                            <div>
+                                <label>Área Académica</label>
+                                <input type="text" name="area" placeholder="Ej. Sistemas / Industrial" required>
+                            </div>
+                            <div>
+                                <label>Usuario de Acceso</label>
+                                <input type="text" name="usuario" id="usuarioSugerido" placeholder="Nombre de usuario" required>
+                            </div>
+                            <div>
+                                <label>Contraseña</label>
+                                <input type="password" name="contrasena" placeholder="••••••••" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primario">
+                            <i class="bi bi-person-plus-fill"></i> Finalizar Registro de Docente
+                        </button>
+                    </form>
+                </div>
+
+                <h2 style="color: #003366; margin-bottom: 20px;"><i class="bi bi-list-stars"></i> Docentes Registrados</h2>
+                
+                <div class="tabla-container">
+                    <table class="tabla-general">
+                        <thead>
+                            <tr>
+                                <th>Nombre Completo</th>
+                                <th>Departamento / Área</th>
+                                <th>Configuración</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% docentes.forEach(d => { %>
+                                <tr>
+                                    <td><strong><%= d.nombre %></strong></td>
+                                    <td><%= d.area %></td>
+                                    <td>
+                                        <a href="/disponibilidad/<%= d.id_docente %>" class="btn-accion">
+                                            <i class="bi bi-calendar-check"></i> Asignar Disponibilidad
+                                        </a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+   <script>
+    const inputNombre = document.getElementById('nombreDocente');
+    const inputUsuario = document.getElementById('usuarioSugerido');
+
+    if (inputNombre && inputUsuario) { 
+        inputNombre.addEventListener('input', () => {
+            const valor = inputNombre.value.trim();
+            if (valor.includes(' ')) {
+                const partes = valor.split(/\s+/); 
+                const nombre = partes[0];
+                const apellido = partes[partes.length - 1]; 
+                if (nombre && apellido) {
+                    const sugerencia = (nombre.charAt(0) + apellido).toLowerCase();
+                    inputUsuario.value = sugerencia.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                }
+            } else {
+                inputUsuario.value = valor.toLowerCase();
+            }
+        });
+    }
+
+    const formDocente = document.getElementById('formDocente');
+    if (formDocente) {
+        formDocente.addEventListener('submit', function(e) {
+            e.preventDefault(); 
+
+            Swal.fire({
+                title: '¿Registrar docente?',
+                text: `Se creará el perfil para: ${inputNombre.value}`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#003366',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Sí, registrar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    formDocente.submit(); 
+                }
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        if (urlParams.get('mensaje') === 'guardado') {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Operación Exitosa!',
+                text: 'El docente ha sido registrado correctamente',
+                confirmButtonColor: '#003366'
+            });
+        }
+
+        if (urlParams.get('mensaje') === 'disponibilidad_guardada') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Horario Actualizado',
+                text: 'La disponibilidad del docente se guardó con éxito',
+                confirmButtonColor: '#003366'
+            });
+        }
+
+        if (urlParams.get('error') === 'duplicado') {
+            Swal.fire({
+                icon: 'error',
+                title: 'No se pudo registrar',
+                text: 'Ese nombre de usuario ya existe en el sistema',
+                confirmButtonColor: '#003366'
+            });
+        }
+
+        window.history.replaceState({}, document.title, window.location.pathname);
+    });
+
+    function confirmarSalida(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: "Esperamos verte pronto por aquí",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#003366',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Salir',
+                cancelButtonText: 'Permanecer'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/logout";
+                }
+            });
+        }
+</script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Aulas | CBTis 234</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Administrador</h2>
+            <ul>
+                <li><a href="/dashboard"><i class="bi bi-house-door"></i> Inicio</a></li>
+                <li><a href="/docentes"><i class="bi bi-person-badge"></i> Docentes</a></li>
+                <li><a href="/materias"><i class="bi bi-book"></i> Materias</a></li>
+                <li><a href="/grupos"><i class="bi bi-people"></i> Grupos</a></li>
+                <li><a href="/aulas"><i class="bi bi-building"></i> Aulas</a></li>
+                <li><a href="/horarios"><i class="bi bi-calendar3"></i> Horarios</a></li>
+                <li><a href="/asignar-materias"><i class="bi bi-journal-check"></i> Asignar Materias</a></li>
+                <li><a href="/crear-horario"><i class="bi bi-clock"></i> Programar Clase</a></li>
+                <li><a href="/incidencias"><i class="bi bi-bell"></i> Incidencias Pendientes</a></li>
+                <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 10px 0;">
+                <li><a href="#" onclick="confirmarSalida(event)" style="color: #ff7675;"><i class="bi bi-box-arrow-left"></i> Cerrar Sesión</a></li>
+            </ul>
+        </div>
+
+<div class="content-page">
+    <div class="main-container">
+        <h1 class="titulo">Gestión de Aulas</h1>
+
+        <div class="card-uniforme">
+            <form action="/guardar-aula" method="POST" id="formAula">
+                <div class="form-grid">
+                    <div>
+                        <label>Nombre del Aula / Laboratorio</label>
+                        <input type="text" name="nombre" id="nombreAula" placeholder="Ej. Aula 101" required>
+                    </div>
+                    <div>
+                        <label>Capacidad Máxima</label>
+                        <input type="number" name="capacidad" id="capacidadAula" placeholder="Ej. 40" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primario"><i class="bi bi-plus-circle"></i> Registrar Aula</button>
+            </form>
+        </div>
+
+        <h2 style="color: #003366; margin-bottom: 20px;"><i class="bi bi-building-list"></i> Catálogo de Aulas</h2>
+
+        <div class="tabla-container">
+            <table class="tabla-general">
+                <thead>
+                    <tr>
+                        <th>Nombre del Aula</th>
+                        <th>Capacidad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(aulas.length > 0) { %>
+                        <% aulas.forEach(aula => { %>
+                            <tr>
+                                <td><strong><i class="bi bi-door-closed me-2"></i><%= aula.nombre %></strong></td>
+                                <td><span class="capacidad-tag"><%= aula.capacidad %> alumnos</span></td>
+                                <td>
+                                    <div style="display: flex; gap: 10px; justify-content: center;">
+                                        <button onclick="editarAula('<%= aula.id_aula %>', '<%= aula.nombre %>', '<%= aula.capacidad %>')" class="btn-accion" style="background-color: #f39c12; color: white;">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button onclick="confirmarEliminacion('<%= aula.id_aula %>')" class="btn-accion" style="background-color: #e74c3c; color: white;">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr><td colspan="3" style="text-align:center;">No hay aulas registradas.</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const formAula = document.getElementById('formAula');
+    if (formAula) {
+        formAula.addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: '¿Registrar aula?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#003366',
+                confirmButtonText: 'Sí, guardar'
+            }).then((result) => { if (result.isConfirmed) this.submit(); });
+        });
+    }
+
+    function editarAula(id, nombreActual, capacidadActual) {
+        Swal.fire({
+            title: 'Editar Aula',
+            html: `
+                <div style="text-align: left;">
+                    <label>Nombre del Aula:</label>
+                    <input id="swal-nombre" class="swal2-input" value="${nombreActual}">
+                    <label>Capacidad:</label>
+                    <input id="swal-capacidad" type="number" class="swal2-input" value="${capacidadActual}">
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar Cambios',
+            confirmButtonColor: '#003366',
+            preConfirm: () => {
+                const nombre = document.getElementById('swal-nombre').value;
+                const capacidad = document.getElementById('swal-capacidad').value;
+                if (!nombre || !capacidad) { Swal.showValidationMessage('Llena todos los campos'); }
+                return { id, nombre, capacidad };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'POST'; form.action = '/actualizar-aula';
+                Object.keys(result.value).forEach(key => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden'; input.name = key; input.value = result.value[key];
+                    form.appendChild(input);
+                });
+                document.body.appendChild(form); form.submit();
+            }
+        });
+    }
+
+    function confirmarEliminacion(id) {
+        Swal.fire({
+            title: '¿Eliminar aula?',
+            text: "Esta acción no se puede deshacer",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar'
+        }).then((result) => {
+            if (result.isConfirmed) window.location.href = `/eliminar-aula/${id}`;
+        });
+    }
+
+    window.onload = () => {
+        const params = new URLSearchParams(window.location.search);
+        const m = params.get("mensaje");
+        if (m === "registrado") Swal.fire('¡Éxito!', 'Aula guardada', 'success');
+        if (m === "duplicado") Swal.fire('Error', 'Esa aula ya existe', 'warning');
+        if (m === "eliminado") Swal.fire('Eliminado', 'El aula fue borrada', 'success');
+        if (m === "actualizado") Swal.fire('¡Actualizado!', 'Cambios guardados', 'success');
+        if (m === "error_vinculo") Swal.fire('No se puede eliminar', 'El aula está asignada a un horario', 'error');
+        
+        window.history.replaceState({}, document.title, window.location.pathname);
+    };
+</script>
+</body>
+</html>

@@ -1,0 +1,317 @@
+
+:root {
+    --cbtis-azul: #003366;
+    --cbtis-celeste: #0099cc;
+    --blanco: #ffffff;
+    --fondo: #f8f9fa;
+    --gris-borde: #eef2f6;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--fondo);
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Fija */
+.sidebar {
+    width: 260px;
+    background: var(--cbtis-azul);
+    color: white;
+    padding: 25px;
+    position: fixed;
+    top: 0;          
+    left: 0;      
+    height: 100vh;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+
+.sidebar h2 { text-align: center; margin-bottom: 30px; font-size: 1.5rem; }
+.sidebar ul { list-style: none; padding: 0; }
+.sidebar ul li { margin: 15px 0; }
+.sidebar ul li a { 
+    color: white; 
+    text-decoration: none; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px;
+    transition: 0.3s;
+}
+.sidebar ul li a:hover { color: var(--cbtis-celeste); }
+
+/* Ajuste para el contenido */
+.content-page {
+    flex: 1;
+    margin-left: 260px; 
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 50px 20px;
+}
+
+.main-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* Títulos Globales */
+.titulo {
+    color: var(--cbtis-azul) !important;
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    font-weight: bold;
+}
+
+/* Card de Registro General */
+.card-uniforme {
+    background: var(--blanco) !important;
+    padding: 30px !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+    border-top: 6px solid var(--cbtis-celeste) !important;
+    margin-bottom: 40px !important;
+    box-sizing: border-box !important;
+}
+
+.form-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+    margin-bottom: 25px !important;
+}
+
+.form-grid label {
+    display: block !important;
+    margin-bottom: 8px !important;
+    color: var(--cbtis-azul) !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+}
+
+/* Inputs y Textbox General */
+.form-grid input, .form-grid select, .form-grid textarea {
+    width: 100% !important;
+    padding: 12px 15px !important;
+    border: 2px solid var(--gris-borde) !important;
+    border-radius: 10px !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+    box-sizing: border-box !important;
+}
+
+.form-grid input:focus {
+    border-color: var(--cbtis-celeste) !important;
+    outline: none !important;
+    box-shadow: 0 4px 10px rgba(0, 153, 204, 0.1) !important;
+}
+
+.btn-primario {
+    background: var(--cbtis-azul) !important;
+    color: white !important;
+    border: none !important;
+    padding: 15px !important;
+    border-radius: 10px !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: 0.3s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+}
+
+.btn-primario:hover {
+    background: #002244 !important;
+    transform: translateY(-2px) !important;
+}
+
+
+.tabla-general {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 20px;
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.tabla-general thead {
+    background-color: var(--cbtis-azul) !important;
+    color: white !important;
+}
+
+.tabla-general th {
+    padding: 20px !important;
+    text-align: center !important;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.tabla-general td {
+    padding: 18px !important;
+    text-align: center !important;
+    border-bottom: 1px solid #eee;
+    color: #333;
+}
+
+.tabla-general tbody tr:nth-child(even) { background-color: #f8faff; }
+.tabla-general tbody tr:hover { background-color: #f0f4f8; }
+
+.btn-accion {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--cbtis-celeste) !important;
+    color: white !important;
+    padding: 8px 15px !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+    font-weight: bold !important;
+    font-size: 0.8rem;
+    transition: 0.3s ease;
+}
+
+.btn-accion:hover { background-color: var(--cbtis-azul) !important; }
+
+.login-page {
+    background: linear-gradient(135deg, #003366 0%, #001a33 100%);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-header h2 {
+    color: #003366;
+    margin: 10px 0 5px 0;
+}
+
+.login-header p {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.input-group {
+    text-align: left;
+    margin-bottom: 1.5rem;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+    font-weight: 600;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box; 
+}
+
+.btn-block {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.badge-pendiente {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.badge-resuelto {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+/* ==========================================================================
+   Nuevos Botones de Acción para Incidencias (Integrados al Sistema)
+   ========================================================================== */
+.btn-tabla {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 8px 14px !important;
+    border-radius: 8px !important;
+    border: none !important;
+    font-family: 'Segoe UI', sans-serif !important;
+    font-weight: bold !important;
+    font-size: 0.8rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease-in-out !important;
+    text-decoration: none !important;
+}
+
+/* Botón Resolver (Verde Éxito) */
+.btn-exito {
+    background-color: #2ecc71 !important;
+    color: white !important;
+}
+
+.btn-exito:hover {
+    background-color: #27ae60 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 10px rgba(46, 204, 113, 0.2) !important;
+}
+
+/* Botón Declinar (Rojo Peligro) */
+.btn-peligro {
+    background-color: #e74c3c !important;
+    color: white !important;
+}
+
+.btn-peligro:hover {
+    background-color: #c0392b !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.2) !important;
+}
+
+/* Contenedor flexible en la celda de la tabla */
+.acciones-flex {
+    display: flex !important;
+    gap: 10px !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+/* Ajuste sutil para textos secundarios bajo la materia */
+.texto-secundario {
+    display: block !important;
+    color: #666 !important;
+    font-size: 0.75rem !important;
+    margin-top: 4px !important;
+}

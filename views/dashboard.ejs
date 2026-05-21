@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Principal | CBTis 234</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-left: 6px solid var(--cbtis-azul);
+            min-height: 100px; 
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            color: var(--cbtis-azul);
+        }
+
+        .stat-info h3 { margin: 0; font-size: 1.8rem; color: #333; }
+        .stat-info p { margin: 0; color: #666; font-weight: 600; }
+
+        .welcome-banner {
+            background: linear-gradient(135deg, var(--cbtis-azul), var(--cbtis-celeste));
+            color: white;
+            padding: 50px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Administrador</h2>
+            <ul>
+                <li><a href="/dashboard"><i class="bi bi-house-door"></i> Inicio</a></li>
+                <li><a href="/docentes"><i class="bi bi-person-badge"></i> Docentes</a></li>
+                <li><a href="/materias"><i class="bi bi-book"></i> Materias</a></li>
+                <li><a href="/grupos"><i class="bi bi-people"></i> Grupos</a></li>
+                <li><a href="/aulas"><i class="bi bi-building"></i> Aulas</a></li>
+                <li><a href="/horarios"><i class="bi bi-calendar3"></i> Horarios</a></li>
+                <li><a href="/asignar-materias"><i class="bi bi-journal-check"></i> Asignar Materias</a></li>
+                <li><a href="/crear-horario"><i class="bi bi-clock"></i> Programar Clase</a></li>
+                <li><a href="/incidencias"><i class="bi bi-bell"></i> Incidencias Pendientes</a></li>
+                <hr style="border: 0.5px solid rgba(255,255,255,0.1); margin: 10px 0;">
+                <li><a href="#" onclick="confirmarSalida(event)" style="color: #ff7675;"><i class="bi bi-box-arrow-left"></i> Cerrar Sesión</a></li>
+            </ul>
+        </div>
+
+        <div class="content-page"> 
+            <div class="main-container">
+                
+                <div class="welcome-banner">
+                    <h1 style="margin: 0;">¡Bienvenido al Sistema!</h1>
+                    <p style="opacity: 0.9; font-size: 1.1rem;">Panel de Planeación Académica - CBTis 234</p>
+                </div>
+
+                <h2 class="titulo" style="text-align: left; font-size: 1.8rem;">Resumen del Plantel</h2>
+
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <i class="bi bi-person-video3 stat-icon"></i>
+                        <div class="stat-info">
+                            <h3><%= stats.docentes || 0 %></h3>
+                            <p>Docentes</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="border-left-color: #27ae60;">
+                        <i class="bi bi-journal-bookmark stat-icon" style="color: #27ae60;"></i>
+                        <div class="stat-info">
+                            <h3><%= stats.materias || 0 %></h3>
+                            <p>Materias</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="border-left-color: #f39c12;">
+                        <i class="bi bi-door-open stat-icon" style="color: #f39c12;"></i>
+                        <div class="stat-info">
+                            <h3><%= stats.aulas || 0 %></h3>
+                            <p>Aulas</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="border-left-color: #8e44ad;">
+                        <i class="bi bi-layers stat-icon" style="color: #8e44ad;"></i>
+                        <div class="stat-info">
+                            <h3><%= stats.grupos || 0 %></h3>
+                            <p>Grupos</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px;">
+                    <h3 style="color: var(--cbtis-azul);">Acciones Rápidas</h3>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px;">
+                        
+                        <a href="/crear-horario" class="btn-primario" style="text-decoration: none; width: auto; padding: 12px 25px;">
+                            <i class="bi bi-plus-lg"></i> Nueva Clase
+                        </a>
+                        <a href="/horarios" class="btn-accion" style="text-decoration: none; padding: 12px 25px;">
+                            <i class="bi bi-eye"></i> Ver Horarios
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function confirmarSalida(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: "Esperamos verte pronto por aquí",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#003366',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Salir',
+                cancelButtonText: 'Permanecer'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/logout";
+                }
+            });
+        }
+    </script>
+</body>
+</html>
