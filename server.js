@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
 app.use(session({
-    secret: "sistema_planeacion",
+    secret: process.env.SESSION_SECRET || "secreto_por_defecto",
     resave: false,
     saveUninitialized: true
 }));
