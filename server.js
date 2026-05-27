@@ -11,7 +11,6 @@ const grupoRoutes = require("./routes/grupoRoutes");
 const horarioRoutes = require("./routes/horarioRoutes");
 const asignacionRoutes = require("./routes/asignacionRoutes");
 const aulaRoutes = require("./routes/aulaRoutes");
-//const generadorRoutes = require("./routes/generadorRoutes");
 const incidenciaRoutes = require("./routes/incidenciaRoutes");
 
 const app = express();
@@ -29,16 +28,23 @@ app.use(session({
 }));
 
 app.use("/", authRoutes); 
+
+app.use((req, res, next) => {
+    if (req.session.usuario) {
+        return next();
+    }
+    return res.redirect("/");
+});
+
 app.use("/", docenteRoutes);
 app.use("/", materiaRoutes);
 app.use("/", grupoRoutes);
 app.use("/", horarioRoutes);
 app.use("/", asignacionRoutes);
 app.use("/", aulaRoutes);
-//app.use("/", generadorRoutes);
 app.use("/", incidenciaRoutes);
 
-app.listen(3000, () => {
-    console.log("Servidor corriendo en puerto 3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
-
