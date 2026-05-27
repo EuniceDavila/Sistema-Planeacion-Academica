@@ -35,7 +35,7 @@ exports.guardarDocente = async (req, res) => {
 
 exports.verDisponibilidad = async (req, res) => {
     const id = req.params.id;
-    const bloques = ["07:00-07:50", "07:50-08:40", "08:40-09:30", "09:30-10:20", "10:50-11:40", "11:40-12:30", "12:30-13:20"];
+    const bloques = ["07:00-07:50", "07:50-08:40", "08:40-09:30", "09:30-10:20", "10:50-11:40", "11:40-12:30", "12:30-13:20","13:20-14:10"];
     
     try {
         // Aqui ejecuto consultas en paralelo

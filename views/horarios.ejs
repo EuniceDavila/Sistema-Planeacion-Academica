@@ -74,15 +74,17 @@
                     <i class=""></i> Propuesta Automática Generada
                 </h3>
                 <table class="tabla-general">
-                    <thead>
-                        <tr>
-                            <th><i class="bi bi-check2-all"></i></th>
-                            <th>Docente / Materia</th>
-                            <th>Día</th>
-                            <th>Horario</th>
-                            <th>Aula</th>
-                        </tr>
-                    </thead>
+                   <thead>
+    <tr>
+        <th>
+            <input type="checkbox" id="checkTodoMaster" onclick="alternarTodosLosChecks(this)" style="width: 18px; height: 18px; cursor: pointer;" checked>
+        </th>
+        <th>Docente / Materia</th>
+        <th>Día</th>
+        <th>Horario</th>
+        <th>Aula</th>
+    </tr>
+</thead>
                     <tbody id="tablaCuerpoPreview"></tbody>
                 </table>
                 <div style="display: flex; gap: 15px; margin-top: 25px; justify-content: flex-end;">
@@ -275,6 +277,19 @@
     filas.forEach(fila => {
         const contenido = fila.cells[1].textContent.toLowerCase();
         fila.style.display = contenido.includes(busqueda) ? "" : "none";
+    });
+}
+
+function alternarTodosLosChecks(master) {
+    const filas = document.querySelectorAll("#tablaCuerpoPreview tr");
+    
+    filas.forEach(fila => {
+        if (fila.style.display !== "none") {
+            const checkbox = fila.querySelector('.check-propuesta');
+            if (checkbox) {
+                checkbox.checked = master.checked;
+            }
+        }
     });
 }
     </script>

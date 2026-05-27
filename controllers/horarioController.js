@@ -331,7 +331,7 @@ exports.obtenerPropuesta = async (req, res) => {
         const [aulas] = await db.query("SELECT * FROM aulas");
 
         const propuestaFinal = [];
-        const bloquesHorarios = ["07:00", "07:50", "08:40", "09:30", "10:50", "11:40", "12:30"];
+        const bloquesHorarios = ["07:00", "07:50", "08:40", "09:30", "10:50", "11:40", "12:30", "13:20","14:10"];
         const dias = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes"];
 
         for (let p of pendientes) {
