@@ -130,6 +130,7 @@ function confirmarEliminacion(id) {
     });
 }
 
+
 function editarMateria(id, nombreActual, horasActual) {
     Swal.fire({
         title: 'Editar Materia',
@@ -194,6 +195,7 @@ function confirmarSalida(event) {
 window.onload = () => {
     const params = new URLSearchParams(window.location.search);
     const mensaje = params.get("mensaje");
+    const error = params.get("error"); 
 
     if (mensaje === "registrado") {
         Swal.fire({ icon: 'success', title: '¡Hecho!', text: 'Materia guardada', confirmButtonColor: '#003366' });
@@ -205,11 +207,18 @@ window.onload = () => {
         Swal.fire({ icon: 'success', title: '¡Actualizado!', text: 'Los cambios se guardaron con éxito', confirmButtonColor: '#003366' });
     }
 
-    if (mensaje) {
+    if (error === "asignada") {
+        Swal.fire({ 
+            icon: 'error', 
+            title: 'Operación Inválida', 
+            text: 'No se puede eliminar la materia porque ya está asignada a un grupo o docente', 
+            confirmButtonColor: '#003366' 
+        });
+    }
+    if (mensaje || error) {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
-    };
-
+};
     </script>
 </body>
 </html>

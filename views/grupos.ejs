@@ -150,15 +150,31 @@
             }).then((result) => { if (result.isConfirmed) window.location.href = `/eliminar-grupo/${id}`; });
         }
 
-        window.onload = () => {
-            const params = new URLSearchParams(window.location.search);
-            const m = params.get("mensaje");
-            if (m === "registrado") Swal.fire('¡Éxito!', 'Grupo guardado', 'success');
-            if (m === "duplicado") Swal.fire('Error', 'Este grupo ya existe', 'warning');
-            if (m === "eliminado") Swal.fire('Eliminado', 'Grupo borrado', 'success');
-            if (m === "actualizado") Swal.fire('¡Actualizado!', 'Cambios guardados', 'success');
-            window.history.replaceState({}, document.title, window.location.pathname);
-        };
+      window.onload = () => {
+    const params = new URLSearchParams(window.location.search);
+    const mensaje = params.get("mensaje");
+
+    if (mensaje === "registrado") {
+        Swal.fire({ icon: 'success', title: '¡Hecho!', text: 'Grupo guardado con éxito', confirmButtonColor: '#003366' });
+    } else if (mensaje === "duplicado") {
+        Swal.fire({ icon: 'warning', title: 'El grupo ya existe', text: 'Ya hay un grupo con ese nombre en este semestre', confirmButtonColor: '#003366' });
+    } else if (mensaje === "eliminado") {
+        Swal.fire({ icon: 'success', title: '¡Eliminado!', text: 'El grupo fue borrado', confirmButtonColor: '#003366' });
+    } else if (mensaje === "actualizado") {
+        Swal.fire({ icon: 'success', title: '¡Actualizado!', text: 'Los cambios se guardaron con éxito', confirmButtonColor: '#003366' });
+    } 
+   else if (mensaje === "error_vinculo") {
+        Swal.fire({ 
+            icon: 'error', 
+            title: 'No se puede eliminar', 
+            text: 'Este grupo ya tiene materias u horarios asignados. No puedes borrarlo para no perder el historial', 
+            confirmButtonColor: '#003366' 
+        });
+    }
+if (mensaje) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+};
 
         function confirmarSalida(event) {
             event.preventDefault();

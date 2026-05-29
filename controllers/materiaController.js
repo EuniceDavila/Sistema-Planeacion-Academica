@@ -49,10 +49,10 @@ exports.eliminarMateria = async (req, res) => {
         res.redirect("/materias?mensaje=eliminado");
     } catch (err) {
         console.error("Error al eliminar materia:", err);
-        res.status(500).send("No se puede eliminar la materia porque ya está asignada a un grupo o docente.");
+       
+        return res.redirect("/materias?error=asignada");
     }
 };
-
 exports.actualizarMateria = async (req, res) => {
     const { id, nombre, horas } = req.body;
     try {
